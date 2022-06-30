@@ -1,5 +1,7 @@
 package model.entities;
 
+import model.exceptions.DomainException;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -14,6 +16,10 @@ public class Reservation {
     }
 
     public Reservation(Integer roomNumber, Date checkIn, Date checkOut) {
+        /* Programação defensiva */
+        if(!checkOut.after(checkIn)) {
+            throw new DomainException("Error in reservation: Check-out date must be after check-in date.");
+        }
         this.roomNumber = roomNumber;
         this.checkIn = checkIn;
         this.checkOut = checkOut;
@@ -40,19 +46,20 @@ public class Reservation {
         return TimeUnit.DAYS.convert(diff, TimeUnit.MILLISECONDS);
     }
 
-    public String updateDates(Date checkIn, Date checkOut) {
+    public void updateDates(Date checkIn, Date checkOut) {
         Date now = new Date();
+        /* Abaixo, a excessão DomainException está sendo LANÇADA, e não TRATADA.
+        Para resolver isso, devemos propragar a excessão no nosso método e
+        trata-la no programa principal utilizando o catch */
         if(checkIn.before(now) || checkOut.before(now)) {
-            return "Error in reservation: Reservation dates for update must be future dates";
+            throw new DomainException("Error in reservation: Reservation dates for update must be future dates");
         }
         else if(!checkOut.after(checkIn)) {
-            return "Error in reservation: Check-out date must be after check-in date.";
+            throw new DomainException("Error in reservation: Check-out date must be after check-in date.");
         }
         this.checkIn = checkIn;
         this.checkOut = checkOut;
-        return null;
     }
-
     @Override
     public String toString() {
         return "Reservation: "
